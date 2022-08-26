@@ -4,9 +4,12 @@
   "main": "index.js",
   "license": "MIT",
   "devDependencies": {
+    "ebnf": "^1.9.0",
+    "ebnf-parser": "^0.1.10",
     "esbuild": "^0.15.5",
     "esbuild-register": "^3.3.3",
     "esbuild-runner": "^2.2.1",
+    "lex-parser": "^0.1.4",
     "prettier": "^2.7.1"
   }
 }
