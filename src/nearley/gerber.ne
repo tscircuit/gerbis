@@ -1,8 +1,9 @@
 @preprocessor typescript
 @builtin "number.ne"
 
-start -> (
-    G04
+start -> cmd:* M02 {% d => [...d[0].flatMap(v => v), d[1]] %}
+
+cmd -> _ (G04
   | MO
   | FS
   | AD
@@ -26,7 +27,9 @@ start -> (
   | TA
   | TO
   | TD
-):* M02 {% d => [...d[0].flatMap(v => v), d[1]] %}
+) _ {% d => d[1] %}
+
+_ -> [\n ]:* {% d => null %}
 
 str -> [^*]:+ {% ([d]) => d.join("") %}
 
