@@ -4,10 +4,9 @@ import grammar from "../nearley/gerber"
 
 const exampleFile1 = `
 G04 Ucamco ex. 1: Two square boxes*
-%MOMM*
-%FSLAX26Y26*%fractional digits.
+%MOMM*%
+%FSLAX26Y26*%fractional digits.%
 %TF.Part,Other,example*%
-example
 %LPD*%
 %ADD10C,0.010*%
 D10*
@@ -43,6 +42,9 @@ test("test grammar", async (t) => {
 
 G04 Ucamco ex. 1: Two square boxes*
 G01*
+%MOMM*%
+%FSLAX26Y26*%
+%TF.Part,Other,example*%
 M02*
 
 `.trim()
