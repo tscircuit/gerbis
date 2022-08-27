@@ -34,37 +34,13 @@ interface Grammar {
 const grammar: Grammar = {
   Lexer: undefined,
   ParserRules: [
-    {"name": "dqstring$ebnf$1", "symbols": []},
-    {"name": "dqstring$ebnf$1", "symbols": ["dqstring$ebnf$1", "dstrchar"], "postprocess": (d) => d[0].concat([d[1]])},
-    {"name": "dqstring", "symbols": [{"literal":"\""}, "dqstring$ebnf$1", {"literal":"\""}], "postprocess": function(d) {return d[1].join(""); }},
-    {"name": "sqstring$ebnf$1", "symbols": []},
-    {"name": "sqstring$ebnf$1", "symbols": ["sqstring$ebnf$1", "sstrchar"], "postprocess": (d) => d[0].concat([d[1]])},
-    {"name": "sqstring", "symbols": [{"literal":"'"}, "sqstring$ebnf$1", {"literal":"'"}], "postprocess": function(d) {return d[1].join(""); }},
-    {"name": "btstring$ebnf$1", "symbols": []},
-    {"name": "btstring$ebnf$1", "symbols": ["btstring$ebnf$1", /[^`]/], "postprocess": (d) => d[0].concat([d[1]])},
-    {"name": "btstring", "symbols": [{"literal":"`"}, "btstring$ebnf$1", {"literal":"`"}], "postprocess": function(d) {return d[1].join(""); }},
-    {"name": "dstrchar", "symbols": [/[^\\"\n]/], "postprocess": id},
-    {"name": "dstrchar", "symbols": [{"literal":"\\"}, "strescape"], "postprocess": 
-        function(d) {
-            return JSON.parse("\""+d.join("")+"\"");
-        }
-        },
-    {"name": "sstrchar", "symbols": [/[^\\'\n]/], "postprocess": id},
-    {"name": "sstrchar", "symbols": [{"literal":"\\"}, "strescape"], "postprocess": function(d) { return JSON.parse("\""+d.join("")+"\""); }},
-    {"name": "sstrchar$string$1", "symbols": [{"literal":"\\"}, {"literal":"'"}], "postprocess": (d) => d.join('')},
-    {"name": "sstrchar", "symbols": ["sstrchar$string$1"], "postprocess": function(d) {return "'"; }},
-    {"name": "strescape", "symbols": [/["\\/bfnrt]/], "postprocess": id},
-    {"name": "strescape", "symbols": [{"literal":"u"}, /[a-fA-F0-9]/, /[a-fA-F0-9]/, /[a-fA-F0-9]/, /[a-fA-F0-9]/], "postprocess": 
-        function(d) {
-            return d.join("");
-        }
-        },
     {"name": "start$ebnf$1", "symbols": []},
     {"name": "start$ebnf$1$subexpression$1", "symbols": ["G04"]},
     {"name": "start$ebnf$1$subexpression$1", "symbols": ["G01"]},
     {"name": "start$ebnf$1$subexpression$1", "symbols": ["MO"]},
     {"name": "start$ebnf$1$subexpression$1", "symbols": ["FS"]},
     {"name": "start$ebnf$1$subexpression$1", "symbols": ["TF"]},
+    {"name": "start$ebnf$1$subexpression$1", "symbols": ["D01"]},
     {"name": "start$ebnf$1", "symbols": ["start$ebnf$1", "start$ebnf$1$subexpression$1"], "postprocess": (d) => d[0].concat([d[1]])},
     {"name": "start", "symbols": ["start$ebnf$1", "M02"], "postprocess": d => [...d[0].flatMap(v => v), d[1]]},
     {"name": "str$ebnf$1", "symbols": [/[^*]/]},
@@ -128,9 +104,12 @@ const grammar: Grammar = {
     {"name": "G03", "symbols": ["G03$string$1", {"literal":"*"}], "postprocess": ([command_code]) => ({ command_code })},
     {"name": "G75$string$1", "symbols": [{"literal":"G"}, {"literal":"7"}, {"literal":"5"}], "postprocess": (d) => d.join('')},
     {"name": "G75", "symbols": ["G75$string$1", {"literal":"*"}], "postprocess": ([command_code]) => ({ command_code })},
-    {"name": "number$ebnf$1", "symbols": [/[0-9]/]},
-    {"name": "number$ebnf$1", "symbols": ["number$ebnf$1", /[0-9]/], "postprocess": (d) => d[0].concat([d[1]])},
-    {"name": "number", "symbols": ["number$ebnf$1"], "postprocess": d => parseInt(d[0].join(""))}
+    {"name": "D01$string$1", "symbols": [{"literal":"D"}, {"literal":"0"}, {"literal":"1"}, {"literal":"*"}], "postprocess": (d) => d.join('')},
+    {"name": "D01", "symbols": [/["X" integer]/, /["Y" integer]/, /["I" integer "J" integer]/, "D01$string$1"], "postprocess": 
+        ([x, y, i, j]) => ({ x, y, i, j }) },
+    {"name": "integer$ebnf$1", "symbols": [/[0-9]/]},
+    {"name": "integer$ebnf$1", "symbols": ["integer$ebnf$1", /[0-9]/], "postprocess": (d) => d[0].concat([d[1]])},
+    {"name": "integer", "symbols": ["integer$ebnf$1"], "postprocess": d => parseInt(d[0].join(""))}
   ],
   ParserStart: "start",
 };

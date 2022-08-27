@@ -1,5 +1,4 @@
 @preprocessor typescript
-@builtin "string.ne"
 
 start -> (
     G04
@@ -7,6 +6,7 @@ start -> (
   | MO
   | FS
   | TF
+  | D01
 ):* M02 {% d => [...d[0].flatMap(v => v), d[1]] %}
 
 str -> [^*]:+ {% ([d]) => d.join("") %}
@@ -47,4 +47,7 @@ G02 -> "G02" "*" {% ([command_code]) => ({ command_code }) %}
 G03 -> "G03" "*" {% ([command_code]) => ({ command_code }) %}
 G75 -> "G75" "*" {% ([command_code]) => ({ command_code }) %}
 
-number -> [0-9]:+ {% d => parseInt(d[0].join("")) %}
+D01 -> ["X" integer] ["Y" integer] ["I" integer "J" integer] "D01*" {%
+([x, y, i, j]) => ({ x, y, i, j }) %}
+
+integer -> [0-9]:+ {% d => parseInt(d[0].join("")) %}
