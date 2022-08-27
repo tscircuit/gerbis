@@ -3,13 +3,18 @@
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
+  "scripts": {
+    "build:grammar": "yarn run nearleyc ./src/nearley/gerber.ne --out ./src/nearley/gerber.ts",
+    "build:grammar:watch": "nodemon -w ./src/nearley/gerber.ne --exec \"yarn build:grammar\""
+  },
   "devDependencies": {
-    "ebnf": "^1.9.0",
-    "ebnf-parser": "^0.1.10",
+    "@types/nearley": "^2.11.2",
+    "ava": "^4.3.3",
     "esbuild": "^0.15.5",
     "esbuild-register": "^3.3.3",
     "esbuild-runner": "^2.2.1",
-    "lex-parser": "^0.1.4",
+    "nearley": "^2.20.1",
+    "nodemon": "^2.0.19",
     "prettier": "^2.7.1"
   }
 }

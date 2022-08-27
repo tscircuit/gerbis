@@ -1,10 +1,10 @@
-export default `
 
 # KT,  29-Jan-2022
 @@grammar    :: Gerber_2022_02_
 @@nameguard  :: False
+@@whitespace :: /\n/
 
-START =
+start =
     {
         | G04
         | MO
@@ -208,10 +208,3 @@ name      = /[._a-zA-Z$][._a-zA-Z0-9]*/;
 user_name =  /[_a-zA-Z$][._a-zA-Z0-9]*/; # Cannot start with a dot
 string    = /[^%*]*/; # All characters except * %
 field     = /[^%*,]*/; # All characters except * % ,
-
-`
-  .trim()
-  .split("\n")
-  .filter((l) => !l.startsWith("#"))
-  .filter((l) => !l.startsWith("@@"))
-  .join("\n")

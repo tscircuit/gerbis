@@ -1,6 +1,7 @@
 /**  Comment A human readable comment, does not affect the image. 4.1 */
 export interface Comment {
   command_code: "G04"
+  comment: string
 }
 
 /**  Mode Sets the unit to mm or inch. 4.2.1 */
