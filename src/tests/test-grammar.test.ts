@@ -5,7 +5,7 @@ import grammar from "../nearley/gerber"
 const exampleFile1 = `
 G04 Ucamco ex. 1: Two square boxes*
 %MOMM*%
-%FSLAX26Y26*%fractional digits.%
+%FSLAX26Y26*%
 %TF.Part,Other,example*%
 %LPD*%
 %ADD10C,0.010*%
@@ -13,7 +13,6 @@ D10*
 X0Y0D02*
 G01*
 X5000000Y0D01*
-is the current point (0,0), end point is (5, 0)
 Y5000000D01*
 X0D01*
 Y0D01*
@@ -37,18 +36,11 @@ const parse = (input: string) => {
 }
 
 test("test grammar", async (t) => {
-  const result = parse(
-    `
-
-G04 Ucamco ex. 1: Two square boxes*
-G01*
-%MOMM*%
-%FSLAX26Y26*%
-%TF.Part,Other,example*%
-M02*
-
-`.trim()
-  )?.[0]
+  const result = parse(exampleFile1)?.[0]
   console.dir(result, { depth: Infinity })
-  t.deepEqual(result, [])
+  for (let cmd of result) {
+    if (cmd.length)
+      t.fail(`non-command found\n\n${JSON.stringify(cmd, null, "  ")}`)
+  }
+  t.pass("parses")
 })
