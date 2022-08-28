@@ -405,15 +405,21 @@ const grammar: Grammar = {
     {"name": "object_attribute_name", "symbols": ["object_attribute_name$string$15"]},
     {"name": "object_attribute_name", "symbols": ["user_name"]},
     {"name": "AM$string$1", "symbols": [{"literal":"A"}, {"literal":"M"}], "postprocess": (d) => d.join('')},
-    {"name": "AM", "symbols": [{"literal":"%"}, "AM$string$1", "name", {"literal":"*"}, "_", "macro_body", "_", {"literal":"%"}]},
+    {"name": "AM", "symbols": [{"literal":"%"}, "AM$string$1", "name", {"literal":"*"}, "_", "macro_body", "_", {"literal":"%"}], "postprocess":  
+        ([,command_code, name,,, macro_body]) => ({ command_code, name, macro_body })
+        },
     {"name": "macro_body$ebnf$1$subexpression$1", "symbols": ["primitive"]},
     {"name": "macro_body$ebnf$1$subexpression$1", "symbols": ["variable_definition"]},
     {"name": "macro_body$ebnf$1", "symbols": ["macro_body$ebnf$1$subexpression$1"]},
     {"name": "macro_body$ebnf$1$subexpression$2", "symbols": ["primitive"]},
     {"name": "macro_body$ebnf$1$subexpression$2", "symbols": ["variable_definition"]},
     {"name": "macro_body$ebnf$1", "symbols": ["macro_body$ebnf$1", "macro_body$ebnf$1$subexpression$2"], "postprocess": (d) => d[0].concat([d[1]])},
-    {"name": "macro_body", "symbols": ["macro_body$ebnf$1"]},
-    {"name": "variable_definition", "symbols": ["macro_variable", {"literal":"="}, "expr", {"literal":"*"}]},
+    {"name": "macro_body", "symbols": ["macro_body$ebnf$1"], "postprocess": 
+        ([body]) => body[0]
+        },
+    {"name": "variable_definition", "symbols": ["macro_variable", {"literal":"="}, "expr", {"literal":"*"}], "postprocess": 
+        ([name,, expr]) => ({ name, expr })
+        },
     {"name": "primitive", "symbols": [{"literal":"0"}, "string", {"literal":"*"}]},
     {"name": "primitive$ebnf$1$subexpression$1", "symbols": [{"literal":","}, "expr"]},
     {"name": "primitive$ebnf$1", "symbols": ["primitive$ebnf$1$subexpression$1"], "postprocess": id},
@@ -429,12 +435,59 @@ const grammar: Grammar = {
     {"name": "primitive$ebnf$2", "symbols": ["primitive$ebnf$2", "primitive$ebnf$2$subexpression$2"], "postprocess": (d) => d[0].concat([d[1]])},
     {"name": "primitive", "symbols": [{"literal":"4"}, {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", "primitive$ebnf$2", {"literal":","}, "expr", {"literal":"*"}]},
     {"name": "primitive", "symbols": [{"literal":"5"}, {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":"*"}]},
-    {"name": "primitive", "symbols": [{"literal":"7"}, {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":"*"}]},
+    {"name": "primitive", "symbols": [{"literal":"7"}, {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":"*"}], "postprocess": 
+        (d) => {
+          const primitive_map = {
+            "0": "comment",
+            "1": "circle",
+            "20": "vector_line",
+            "21": "center_line",
+            "4": "outline",
+            "5": "polygon",
+            "7": "thermal"
+          }
+          const primitive_params = {
+            // See the double commas and leading commas? This is to avoid matching the
+            // "," between the exprs!
+            comment: [,,"comment"],
+            circle: [,,"exposure",, "diameter",, "center_x",, "center_y", "rotation"],
+            vector_line: [,,"exposure",, "width",, "start_x",, "start_y",, "end_x",, "end_y",, "rotation"],
+            center_line: [,,"exposure",, "width",, "height", "center_x",, "center_y",, "rotation"],
+            //              unique b/c comma is included in points regex  ↴
+            outline: [,,"exposure",, "num_vertices",, "start_x",, "start_y", "points", "rotation"],
+            polygon: [,,"exposure",, "num_vertices",, "center_x",, "center_y",, "diameter",, "rotation"],
+            thermal: [,,"center_x",, "center_y",, "outer_diameter",, "inner_diameter",, "gap",, "rotation"]
+          }
+          const primitive_name = primitive_map[d[0]]
+          const params = {}
+          const param_def = primitive_params[primitive_name]
+          for (let i = 0; i < d.length;i++){
+            const param_name = param_def[i]
+            const param_value = d[i]
+            if (!param_name) continue
+            if (param_name === "points") {
+              throw new Error("TODO add points support")
+            } else if (param_name === "rotation" && primitive_name === "circle") {
+              params[param_name] = parseFloat(param_value[1])
+            }else {
+              params[param_name] = parseFloat(param_value)
+            }
+          }
+        
+          return {
+            primitive_name,
+            ...params
+          }
+        
+        }
+        },
     {"name": "macro_variable$ebnf$1", "symbols": []},
     {"name": "macro_variable$ebnf$1", "symbols": ["macro_variable$ebnf$1", /[0-9]/], "postprocess": (d) => d[0].concat([d[1]])},
     {"name": "macro_variable$ebnf$2", "symbols": []},
     {"name": "macro_variable$ebnf$2", "symbols": ["macro_variable$ebnf$2", /[0-9]/], "postprocess": (d) => d[0].concat([d[1]])},
-    {"name": "macro_variable", "symbols": [{"literal":"$"}, "macro_variable$ebnf$1", /[1-9]/, "macro_variable$ebnf$2"]},
+    {"name": "macro_variable", "symbols": [{"literal":"$"}, "macro_variable$ebnf$1", /[1-9]/, "macro_variable$ebnf$2"], "postprocess": 
+        (d) => d.slice(1).join("")
+        },
     {"name": "expr$ebnf$1$subexpression$1", "symbols": [/["+" | "-"]/]},
     {"name": "expr$ebnf$1$subexpression$1", "symbols": ["term"]},
     {"name": "expr$ebnf$1", "symbols": ["expr$ebnf$1$subexpression$1"]},
@@ -443,26 +496,44 @@ const grammar: Grammar = {
     {"name": "expr$ebnf$1", "symbols": ["expr$ebnf$1", "expr$ebnf$1$subexpression$2"], "postprocess": (d) => d[0].concat([d[1]])},
     {"name": "expr", "symbols": ["expr$ebnf$1"]},
     {"name": "expr", "symbols": ["expr", /[+-]/, "term"]},
-    {"name": "expr", "symbols": ["term"]},
+    {"name": "expr", "symbols": ["term"], "postprocess": 
+        (d) => d
+        },
     {"name": "term", "symbols": ["term", /[x\/]/, "factor"]},
-    {"name": "term", "symbols": ["factor"]},
+    {"name": "term", "symbols": ["factor"], "postprocess": 
+        d => d
+        },
     {"name": "factor", "symbols": [{"literal":"("}, "expr", {"literal":")"}]},
     {"name": "factor", "symbols": ["macro_variable"]},
-    {"name": "factor", "symbols": ["unsigned_decimal"]},
-    {"name": "AB_statement", "symbols": ["AB_open", "block", "AB_close"]},
+    {"name": "factor", "symbols": ["unsigned_decimal"], "postprocess": 
+        d => d
+        },
+    {"name": "AB_statement", "symbols": ["AB_open", "block", "AB_close"], "postprocess": 
+        d => d
+        },
     {"name": "AB_open$string$1", "symbols": [{"literal":"A"}, {"literal":"B"}], "postprocess": (d) => d.join('')},
     {"name": "AB_open$string$2", "symbols": [{"literal":"*"}, {"literal":"%"}], "postprocess": (d) => d.join('')},
-    {"name": "AB_open", "symbols": [{"literal":"%"}, "AB_open$string$1", "aperture_identifier", "AB_open$string$2"]},
+    {"name": "AB_open", "symbols": [{"literal":"%"}, "AB_open$string$1", "aperture_identifier", "AB_open$string$2"], "postprocess": 
+        d => d
+        },
     {"name": "AB_close$string$1", "symbols": [{"literal":"A"}, {"literal":"B"}], "postprocess": (d) => d.join('')},
     {"name": "AB_close$string$2", "symbols": [{"literal":"*"}, {"literal":"%"}], "postprocess": (d) => d.join('')},
-    {"name": "AB_close", "symbols": [{"literal":"%"}, "AB_close$string$1", "AB_close$string$2"]},
-    {"name": "SR_statement", "symbols": ["SR_open", "block", "SR_close"]},
+    {"name": "AB_close", "symbols": [{"literal":"%"}, "AB_close$string$1", "AB_close$string$2"], "postprocess": 
+        d => d
+        },
+    {"name": "SR_statement", "symbols": ["SR_open", "block", "SR_close"], "postprocess": 
+        d => d
+        },
     {"name": "SR_open$string$1", "symbols": [{"literal":"S"}, {"literal":"R"}], "postprocess": (d) => d.join('')},
     {"name": "SR_open$string$2", "symbols": [{"literal":"*"}, {"literal":"%"}], "postprocess": (d) => d.join('')},
-    {"name": "SR_open", "symbols": [{"literal":"%"}, "SR_open$string$1", {"literal":"X"}, "positive_integer", {"literal":"Y"}, "positive_integer", {"literal":"I"}, "decimal", {"literal":"J"}, "decimal", "SR_open$string$2"]},
+    {"name": "SR_open", "symbols": [{"literal":"%"}, "SR_open$string$1", {"literal":"X"}, "positive_integer", {"literal":"Y"}, "positive_integer", {"literal":"I"}, "decimal", {"literal":"J"}, "decimal", "SR_open$string$2"], "postprocess": 
+        d => d
+        },
     {"name": "SR_close$string$1", "symbols": [{"literal":"S"}, {"literal":"R"}], "postprocess": (d) => d.join('')},
     {"name": "SR_close$string$2", "symbols": [{"literal":"*"}, {"literal":"%"}], "postprocess": (d) => d.join('')},
-    {"name": "SR_close", "symbols": [{"literal":"%"}, "SR_close$string$1", "SR_close$string$2"]},
+    {"name": "SR_close", "symbols": [{"literal":"%"}, "SR_close$string$1", "SR_close$string$2"], "postprocess": 
+        d => d
+        },
     {"name": "block$ebnf$1", "symbols": []},
     {"name": "block$ebnf$1$subexpression$1", "symbols": ["G04"]},
     {"name": "block$ebnf$1$subexpression$1", "symbols": ["AD"]},

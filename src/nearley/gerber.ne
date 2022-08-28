@@ -164,9 +164,16 @@ object_attribute_name ->
     | ".CSup"
     | user_name
 
-AM -> "%" "AM" name "*" _ macro_body _ "%"
-macro_body -> ( primitive | variable_definition ):+
-variable_definition -> macro_variable "=" expr "*"
+AM -> "%" "AM" name "*" _ macro_body _ "%" {% 
+  ([,command_code, name,,, macro_body]) => ({ command_code, name, macro_body })
+%}
+macro_body -> ( primitive | variable_definition ):+ {%
+  ([body]) => body[0]
+%}
+variable_definition -> macro_variable "=" expr "*" {%
+  ([name,, expr]) => ({ name, expr })
+%}
+
 primitive ->
       "0"  string "*"
     | "1"  "," expr "," expr "," expr "," expr ("," expr):? "*"
@@ -175,27 +182,108 @@ primitive ->
     | "4"  "," expr "," expr "," expr "," expr ("," expr "," expr):+ "," expr "*"
     | "5"  "," expr "," expr "," expr "," expr "," expr "," expr "*"
     | "7"  "," expr "," expr "," expr "," expr "," expr "," expr "*"
-macro_variable   -> "$" [0-9]:* [1-9] [0-9]:*
+{%
+  (d) => {
+    const primitive_map = {
+      "0": "comment",
+      "1": "circle",
+      "20": "vector_line",
+      "21": "center_line",
+      "4": "outline",
+      "5": "polygon",
+      "7": "thermal"
+    }
+    const primitive_params = {
+      // See the double commas and leading commas? This is to avoid matching the
+      // "," between the exprs!
+      comment: [,,"comment"],
+      circle: [,,"exposure",, "diameter",, "center_x",, "center_y", "rotation"],
+      vector_line: [,,"exposure",, "width",, "start_x",, "start_y",, "end_x",, "end_y",, "rotation"],
+      center_line: [,,"exposure",, "width",, "height", "center_x",, "center_y",, "rotation"],
+      //              unique b/c comma is included in points regex  ↴
+      outline: [,,"exposure",, "num_vertices",, "start_x",, "start_y", "points", "rotation"],
+      polygon: [,,"exposure",, "num_vertices",, "center_x",, "center_y",, "diameter",, "rotation"],
+      thermal: [,,"center_x",, "center_y",, "outer_diameter",, "inner_diameter",, "gap",, "rotation"]
+    }
+    const primitive_name = primitive_map[d[0]]
+    const params = {}
+    const param_def = primitive_params[primitive_name]
+    for (let i = 0; i < d.length;i++){
+      const param_name = param_def[i]
+      const param_value = d[i]
+      if (!param_name) continue
+      if (param_name === "points") {
+        throw new Error("TODO add points support")
+      } else if (param_name === "rotation" && primitive_name === "circle") {
+        params[param_name] = parseFloat(param_value[1])
+      }else {
+        params[param_name] = parseFloat(param_value)
+      }
+    }
+
+    return {
+      primitive_name,
+      ...params
+    }
+
+  }
+%}
+
+  
+macro_variable   -> "$" [0-9]:* [1-9] [0-9]:* {%
+  (d) => d.slice(1).join("")
+%}
 expr -> 
       (["+" | "-"] | term):+
     | expr [+-] term
-    | term 
+    | term
+{%
+  (d) => d
+%}
 
 term -> 
   term [x\/] factor
   | factor 
+{%
+  d => d
+%}
 factor -> 
   "(" expr ")"
   | macro_variable 
   | unsigned_decimal
+{%
+  d => d
+%}
 
 AB_statement -> AB_open  block  AB_close
+{%
+  d => d
+%}
+
 AB_open  ->     "%" "AB" aperture_identifier "*%"
+{%
+  d => d
+%}
+
 AB_close ->     "%" "AB" "*%"
+{%
+  d => d
+%}
 
 SR_statement -> SR_open  block  SR_close
+{%
+  d => d
+%}
+
 SR_open ->      "%" "SR" "X" positive_integer "Y" positive_integer "I" decimal "J" decimal "*%"
+{%
+  d => d
+%}
+
 SR_close ->     "%" "SR" "*%"
+{%
+  d => d
+%}
 
 block -> (
     G04
