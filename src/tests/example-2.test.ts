@@ -107,9 +107,10 @@ G04 Ucamco ex. 2: Shapes*
 %LPD*%
 G04 Define Apertures*
 %AMTHERMAL80*
+7,0,0,0.800,0.550,0.125,45*%
 M02*
 
-  `.trim()
+`.trim()
   )?.[0]
   console.dir(result, { depth: Infinity })
   for (let cmd of result) {

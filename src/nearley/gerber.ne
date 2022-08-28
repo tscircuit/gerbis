@@ -164,7 +164,7 @@ object_attribute_name ->
     | ".CSup"
     | user_name
 
-AM -> "%" "AM" name "*" macro_body  "%"
+AM -> "%" "AM" name "*" _ macro_body _ "%"
 macro_body -> ( primitive | variable_definition ):+
 variable_definition -> macro_variable "=" expr "*"
 primitive ->

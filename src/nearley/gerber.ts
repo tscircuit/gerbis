@@ -405,7 +405,7 @@ const grammar: Grammar = {
     {"name": "object_attribute_name", "symbols": ["object_attribute_name$string$15"]},
     {"name": "object_attribute_name", "symbols": ["user_name"]},
     {"name": "AM$string$1", "symbols": [{"literal":"A"}, {"literal":"M"}], "postprocess": (d) => d.join('')},
-    {"name": "AM", "symbols": [{"literal":"%"}, "AM$string$1", "name", {"literal":"*"}, "macro_body", {"literal":"%"}]},
+    {"name": "AM", "symbols": [{"literal":"%"}, "AM$string$1", "name", {"literal":"*"}, "_", "macro_body", "_", {"literal":"%"}]},
     {"name": "macro_body$ebnf$1$subexpression$1", "symbols": ["primitive"]},
     {"name": "macro_body$ebnf$1$subexpression$1", "symbols": ["variable_definition"]},
     {"name": "macro_body$ebnf$1", "symbols": ["macro_body$ebnf$1$subexpression$1"]},
