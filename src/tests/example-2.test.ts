@@ -109,6 +109,7 @@ G04 Define Apertures*
 %AMTHERMAL80*
 7,0,0,0.800,0.550,0.125,45*%
 %ADD10C,0.1*%
+%ADD12R,0.6X0.6*%
 M02*
 
 `.trim()

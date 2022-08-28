@@ -263,13 +263,13 @@ const grammar: Grammar = {
     {"name": "AD$subexpression$1$subexpression$3$ebnf$1", "symbols": [], "postprocess": () => null},
     {"name": "AD$subexpression$1$subexpression$3", "symbols": [{"literal":"O"}, {"literal":","}, "decimal", {"literal":"X"}, "decimal", "AD$subexpression$1$subexpression$3$ebnf$1"]},
     {"name": "AD$subexpression$1", "symbols": ["AD$subexpression$1$subexpression$3"]},
-    {"name": "AD$subexpression$1$subexpression$4$ebnf$1$subexpression$1", "symbols": [{"literal":"X"}, "decimal"]},
+    {"name": "AD$subexpression$1$subexpression$4$ebnf$1$subexpression$1$ebnf$1$subexpression$1", "symbols": [{"literal":"X"}, "decimal"]},
+    {"name": "AD$subexpression$1$subexpression$4$ebnf$1$subexpression$1$ebnf$1", "symbols": ["AD$subexpression$1$subexpression$4$ebnf$1$subexpression$1$ebnf$1$subexpression$1"], "postprocess": id},
+    {"name": "AD$subexpression$1$subexpression$4$ebnf$1$subexpression$1$ebnf$1", "symbols": [], "postprocess": () => null},
+    {"name": "AD$subexpression$1$subexpression$4$ebnf$1$subexpression$1", "symbols": [{"literal":"X"}, "decimal", "AD$subexpression$1$subexpression$4$ebnf$1$subexpression$1$ebnf$1"]},
     {"name": "AD$subexpression$1$subexpression$4$ebnf$1", "symbols": ["AD$subexpression$1$subexpression$4$ebnf$1$subexpression$1"], "postprocess": id},
     {"name": "AD$subexpression$1$subexpression$4$ebnf$1", "symbols": [], "postprocess": () => null},
-    {"name": "AD$subexpression$1$subexpression$4$ebnf$2$subexpression$1", "symbols": [{"literal":"X"}, "decimal"]},
-    {"name": "AD$subexpression$1$subexpression$4$ebnf$2", "symbols": ["AD$subexpression$1$subexpression$4$ebnf$2$subexpression$1"], "postprocess": id},
-    {"name": "AD$subexpression$1$subexpression$4$ebnf$2", "symbols": [], "postprocess": () => null},
-    {"name": "AD$subexpression$1$subexpression$4", "symbols": [{"literal":"P"}, {"literal":","}, "decimal", {"literal":"X"}, "decimal", "AD$subexpression$1$subexpression$4$ebnf$1", "AD$subexpression$1$subexpression$4$ebnf$2"]},
+    {"name": "AD$subexpression$1$subexpression$4", "symbols": [{"literal":"P"}, {"literal":","}, "decimal", {"literal":"X"}, "decimal", "AD$subexpression$1$subexpression$4$ebnf$1"]},
     {"name": "AD$subexpression$1", "symbols": ["AD$subexpression$1$subexpression$4"]},
     {"name": "AD$subexpression$1$subexpression$5$ebnf$1", "symbols": []},
     {"name": "AD$subexpression$1$subexpression$5$ebnf$1", "symbols": ["AD$subexpression$1$subexpression$5$ebnf$1", /[._a-zA-Z0-9]/], "postprocess": (d) => d[0].concat([d[1]])},
@@ -286,7 +286,6 @@ const grammar: Grammar = {
         ([,command_code, aperture_identifier, [[ty,...dargs]]]) => {
           const type = ty === "C" ? "circle" : ty === "R" ? "rectangle" : ty === "O" ? "obround" : ty === "P" ? "polygon" : "named"
           let params = null
-          console.log({type, dargs})
           switch(type) {
             case "circle": 
               params = {
@@ -298,16 +297,16 @@ const grammar: Grammar = {
             case "obround": 
               params = {
                 width: dargs[1],
-                height: dargs[2],
-                hole_diameter: dargs[3]?.[1]
+                height: dargs[3],
+                hole_diameter: dargs[4]?.[1]
               }
               break
             case "polygon": 
               params = {
                 outer_diameter: dargs[1],
-                num_vertices: dargs[2],
-                rotation: dargs[3]?.[1],
-                hole_diameter: dargs[4]?.[1]
+                num_vertices: dargs[3],
+                rotation: dargs[4]?.[1],
+                hole_diameter: dargs[4]?.[2]?.[1]
               }
               break
             case "named": {

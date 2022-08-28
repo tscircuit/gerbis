@@ -83,13 +83,12 @@ AD -> "%" "AD" aperture_identifier (
         ("C" "," decimal ("X" decimal):?)
       | ("R" "," decimal "X" decimal ("X" decimal):?)
       | ("O" "," decimal "X" decimal ("X" decimal):?)
-      | ("P" "," decimal "X" decimal ("X" decimal):? ("X" decimal):?)
+      | ("P" "," decimal "X" decimal ("X" decimal ("X" decimal):?):?)
       | ([^CROP0-9] [._a-zA-Z0-9]:* ("," decimal ("X" decimal):*):?)
   ) "*%" {%
   ([,command_code, aperture_identifier, [[ty,...dargs]]]) => {
     const type = ty === "C" ? "circle" : ty === "R" ? "rectangle" : ty === "O" ? "obround" : ty === "P" ? "polygon" : "named"
     let params = null
-    console.log({type, dargs})
     switch(type) {
       case "circle": 
         params = {
@@ -101,16 +100,16 @@ AD -> "%" "AD" aperture_identifier (
       case "obround": 
         params = {
           width: dargs[1],
-          height: dargs[2],
-          hole_diameter: dargs[3]?.[1]
+          height: dargs[3],
+          hole_diameter: dargs[4]?.[1]
         }
         break
       case "polygon": 
         params = {
           outer_diameter: dargs[1],
-          num_vertices: dargs[2],
-          rotation: dargs[3]?.[1],
-          hole_diameter: dargs[4]?.[1]
+          num_vertices: dargs[3],
+          rotation: dargs[4]?.[1],
+          hole_diameter: dargs[4]?.[2]?.[1]
         }
         break
       case "named": {
