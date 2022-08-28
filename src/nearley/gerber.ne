@@ -1,9 +1,36 @@
+# Use this to generate a grammar that can be used to parse Gerber layer files.
+# 
+# Note: You will need to replace all the newlines in the input with "", nearley
+# doesn't support removing whitespace and using a lexer makes the
+# nearley not resemble the ebnf grammar given by Gerber as closely.
+# IF YOU FEED THIS INTO "nearley-test" YOU MUST REMOVE NEWLINES
+
 @preprocessor typescript
 @builtin "number.ne"
 
+@{%
+// If you wanted to introduce a lexer, you'd do it like this:
+// const moo = require("moo")
+// 
+// const lexer = moo.compile({
+  // ws: { match: /\n/, lineBreaks: true },
+  // c: { match: /./ }
+// })
+// 
+// lexer.next = (next => () => {   
+  // let token;
+  // while ((token = next.call(lexer)) && (
+    // token.type === "ws"
+  // )) {}
+  // return token;
+// })(lexer.next);
+%}
+
+# @lexer lexer
+
 start -> cmd:* M02 {% d => [...d[0].flatMap(v => v), d[1]] %}
 
-cmd -> _ (G04
+cmd -> G04
   | MO
   | FS
   | AD
@@ -27,9 +54,7 @@ cmd -> _ (G04
   | TA
   | TO
   | TD
-) _ {% d => d[1] %}
-
-_ -> [\n ]:* {% d => null %}
+{% d => d[0] %}
 
 str -> [^*]:+ {% ([d]) => d.join("") %}
 
@@ -39,11 +64,12 @@ M02 -> "M02" "*" {% ([command_code]) => ({ command_code }) %}
 MO -> "%" "MO" ("MM"|"IN") "*%" {% ([,command_code, [unit]]) => ({ command_code, unit }) %}
 
 FS -> "%" "FS" "LA" "X" [1-6] [56] "Y" [1-6] [56] "*%" {%
-([,command_code, m, , xid, xfd, , yid, yfd]) =>
-  ({
+([,command_code, m, , xid, xfd, , yid, yfd]) => {
+  return ({
       command_code,
       x_integer_digits: parseInt(xid), x_fractional_digits: parseInt(yid),
       y_integer_digits: parseInt(yid), y_fractional_digits: parseInt(yfd) })
+}
 %}
 
 user_name ->  [_a-zA-Z$] [._a-zA-Z0-9]:* {% ([f, rest]) => f + rest.join("") %}
@@ -174,8 +200,8 @@ object_attribute_name ->
     | ".CSup"
     | user_name
 
-AM -> "%" "AM" name "*" _ macro_body _ "%" {% 
-  ([,command_code, name,,, macro_body]) => ({ command_code, name, macro_body })
+AM -> "%" "AM" name "*" macro_body "%" {% 
+  ([,command_code, name,, macro_body]) => ({ command_code, name, macro_body })
 %}
 macro_body -> ( primitive | variable_definition ):+ {%
   ([body]) => body[0]
@@ -185,13 +211,13 @@ variable_definition -> macro_variable "=" expr "*" {%
 %}
 
 primitive ->
-      "0"  string "*"
-    | "1"  "," expr "," expr "," expr "," expr ("," expr):? "*"
-    | "20" "," expr "," expr "," expr "," expr "," expr "," expr "," expr "*"
-    | "21" "," expr "," expr "," expr "," expr "," expr "," expr "*"
-    | "4"  "," expr "," expr "," expr "," expr ("," expr "," expr):+ "," expr "*"
-    | "5"  "," expr "," expr "," expr "," expr "," expr "," expr "*"
-    | "7"  "," expr "," expr "," expr "," expr "," expr "," expr "*"
+    #   "0"  string "*"
+    # | "1"  "," expr "," expr "," expr "," expr ("," expr):? "*"
+    # | "20" "," expr "," expr "," expr "," expr "," expr "," expr "," expr "*"
+    # | "21" "," expr "," expr "," expr "," expr "," expr "," expr "*"
+    # | "4"  "," expr "," expr "," expr "," expr ("," expr "," expr):+ "," expr "*"
+    # | "5"  "," expr "," expr "," expr "," expr "," expr "," expr "*"
+    "7"  "," expr "," expr "," expr "," expr "," expr "," expr "*"
 {%
   (d) => {
     const primitive_map = {
@@ -244,26 +270,16 @@ macro_variable   -> "$" [0-9]:* [1-9] [0-9]:* {%
   (d) => d.slice(1).join("")
 %}
 expr -> 
-      (["+" | "-"] | term):+
-    | expr [+-] term
+      ([+\-] | term):+
+    expr [+\-] term
     | term
-{%
-  (d) => d
-%}
-
 term -> 
   term [x\/] factor
   | factor 
-{%
-  d => d
-%}
 factor -> 
   "(" expr ")"
   | macro_variable 
   | unsigned_decimal
-{%
-  d => d
-%}
 
 AB_statement -> AB_open  block  AB_close
 {%
@@ -317,7 +333,7 @@ block -> (
   | TA
   | TO
   | TD
-):*
+):* {% ([d]) => d %}
 
 Dnn -> aperture_identifier "*" {% ([aperture_identifier]) => ({ command_code: "Dnn", aperture_identifier }) %}
 

@@ -87,17 +87,12 @@ M02*
 
 const parse = (input: string) => {
   const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar))
-  parser.feed(
-    input
-    // .split("\n")
-    // .map((s) => s.trim())
-    // .join("")
-  )
+  parser.feed(input.replace(/\n/g, ""))
   return parser.results
 }
 
 test("test example 2", async (t) => {
-  const result = parse(
+  const results = parse(
     `
 
 G04 Ucamco ex. 2: Shapes*
@@ -109,11 +104,25 @@ G04 Define Apertures*
 %AMTHERMAL80*
 7,0,0,0.800,0.550,0.125,45*%
 %ADD10C,0.1*%
+%ADD11C,0.6*%
 %ADD12R,0.6X0.6*%
+%ADD13R,0.4X1.00*%
+%ADD16P,1.00X3*%
 M02*
 
 `.trim()
-  )?.[0]
+  )
+  if (results.length > 1) {
+    return t.fail(
+      `ambiguous grammar, interpretations: ${results.length}\n${JSON.stringify(
+        null,
+        // results.slice(0, 2),
+        null,
+        "  "
+      )}`
+    )
+  }
+  const [result] = results
   console.dir(result, { depth: Infinity })
   for (let cmd of result) {
     if (cmd.length)

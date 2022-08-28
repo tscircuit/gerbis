@@ -4,6 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
+    "test": "ava",
     "build:grammar": "yarn run nearleyc ./src/nearley/gerber.ne --out ./src/nearley/gerber.ts",
     "build:grammar:watch": "nodemon -w ./src/nearley/gerber.ne --exec \"yarn build:grammar\""
   },
@@ -16,5 +17,6 @@
     "nearley": "^2.20.1",
     "nodemon": "^2.0.19",
     "prettier": "^2.7.1"
-  }
+  },
+  "dependencies": {}
 }

@@ -4,6 +4,22 @@
 // @ts-ignore
 function id(d: any[]): any { return d[0]; }
 
+// If you wanted to introduce a lexer, you'd do it like this:
+// const moo = require("moo")
+// 
+// const lexer = moo.compile({
+  // ws: { match: /\n/, lineBreaks: true },
+  // c: { match: /./ }
+// })
+// 
+// lexer.next = (next => () => {   
+  // let token;
+  // while ((token = next.call(lexer)) && (
+    // token.type === "ws"
+  // )) {}
+  // return token;
+// })(lexer.next);
+
 interface NearleyToken {
   value: any;
   [key: string]: any;
@@ -123,34 +139,30 @@ const grammar: Grammar = {
     {"name": "start$ebnf$1", "symbols": []},
     {"name": "start$ebnf$1", "symbols": ["start$ebnf$1", "cmd"], "postprocess": (d) => d[0].concat([d[1]])},
     {"name": "start", "symbols": ["start$ebnf$1", "M02"], "postprocess": d => [...d[0].flatMap(v => v), d[1]]},
-    {"name": "cmd$subexpression$1", "symbols": ["G04"]},
-    {"name": "cmd$subexpression$1", "symbols": ["MO"]},
-    {"name": "cmd$subexpression$1", "symbols": ["FS"]},
-    {"name": "cmd$subexpression$1", "symbols": ["AD"]},
-    {"name": "cmd$subexpression$1", "symbols": ["AM"]},
-    {"name": "cmd$subexpression$1", "symbols": ["Dnn"]},
-    {"name": "cmd$subexpression$1", "symbols": ["D01"]},
-    {"name": "cmd$subexpression$1", "symbols": ["D02"]},
-    {"name": "cmd$subexpression$1", "symbols": ["D03"]},
-    {"name": "cmd$subexpression$1", "symbols": ["G01"]},
-    {"name": "cmd$subexpression$1", "symbols": ["G02"]},
-    {"name": "cmd$subexpression$1", "symbols": ["G03"]},
-    {"name": "cmd$subexpression$1", "symbols": ["G75"]},
-    {"name": "cmd$subexpression$1", "symbols": ["LP"]},
-    {"name": "cmd$subexpression$1", "symbols": ["LM"]},
-    {"name": "cmd$subexpression$1", "symbols": ["LR"]},
-    {"name": "cmd$subexpression$1", "symbols": ["LS"]},
-    {"name": "cmd$subexpression$1", "symbols": ["region_statement"]},
-    {"name": "cmd$subexpression$1", "symbols": ["AB_statement"]},
-    {"name": "cmd$subexpression$1", "symbols": ["SR_statement"]},
-    {"name": "cmd$subexpression$1", "symbols": ["TF"]},
-    {"name": "cmd$subexpression$1", "symbols": ["TA"]},
-    {"name": "cmd$subexpression$1", "symbols": ["TO"]},
-    {"name": "cmd$subexpression$1", "symbols": ["TD"]},
-    {"name": "cmd", "symbols": ["_", "cmd$subexpression$1", "_"], "postprocess": d => d[1]},
-    {"name": "_$ebnf$1", "symbols": []},
-    {"name": "_$ebnf$1", "symbols": ["_$ebnf$1", /[\n ]/], "postprocess": (d) => d[0].concat([d[1]])},
-    {"name": "_", "symbols": ["_$ebnf$1"], "postprocess": d => null},
+    {"name": "cmd", "symbols": ["G04"]},
+    {"name": "cmd", "symbols": ["MO"]},
+    {"name": "cmd", "symbols": ["FS"]},
+    {"name": "cmd", "symbols": ["AD"]},
+    {"name": "cmd", "symbols": ["AM"]},
+    {"name": "cmd", "symbols": ["Dnn"]},
+    {"name": "cmd", "symbols": ["D01"]},
+    {"name": "cmd", "symbols": ["D02"]},
+    {"name": "cmd", "symbols": ["D03"]},
+    {"name": "cmd", "symbols": ["G01"]},
+    {"name": "cmd", "symbols": ["G02"]},
+    {"name": "cmd", "symbols": ["G03"]},
+    {"name": "cmd", "symbols": ["G75"]},
+    {"name": "cmd", "symbols": ["LP"]},
+    {"name": "cmd", "symbols": ["LM"]},
+    {"name": "cmd", "symbols": ["LR"]},
+    {"name": "cmd", "symbols": ["LS"]},
+    {"name": "cmd", "symbols": ["region_statement"]},
+    {"name": "cmd", "symbols": ["AB_statement"]},
+    {"name": "cmd", "symbols": ["SR_statement"]},
+    {"name": "cmd", "symbols": ["TF"]},
+    {"name": "cmd", "symbols": ["TA"]},
+    {"name": "cmd", "symbols": ["TO"]},
+    {"name": "cmd", "symbols": ["TD"], "postprocess": d => d[0]},
     {"name": "str$ebnf$1", "symbols": [/[^*]/]},
     {"name": "str$ebnf$1", "symbols": ["str$ebnf$1", /[^*]/], "postprocess": (d) => d[0].concat([d[1]])},
     {"name": "str", "symbols": ["str$ebnf$1"], "postprocess": ([d]) => d.join("")},
@@ -169,11 +181,12 @@ const grammar: Grammar = {
     {"name": "FS$string$2", "symbols": [{"literal":"L"}, {"literal":"A"}], "postprocess": (d) => d.join('')},
     {"name": "FS$string$3", "symbols": [{"literal":"*"}, {"literal":"%"}], "postprocess": (d) => d.join('')},
     {"name": "FS", "symbols": [{"literal":"%"}, "FS$string$1", "FS$string$2", {"literal":"X"}, /[1-6]/, /[56]/, {"literal":"Y"}, /[1-6]/, /[56]/, "FS$string$3"], "postprocess": 
-        ([,command_code, m, , xid, xfd, , yid, yfd]) =>
-          ({
+        ([,command_code, m, , xid, xfd, , yid, yfd]) => {
+          return ({
               command_code,
               x_integer_digits: parseInt(xid), x_fractional_digits: parseInt(yid),
               y_integer_digits: parseInt(yid), y_fractional_digits: parseInt(yfd) })
+        }
         },
     {"name": "user_name$ebnf$1", "symbols": []},
     {"name": "user_name$ebnf$1", "symbols": ["user_name$ebnf$1", /[._a-zA-Z0-9]/], "postprocess": (d) => d[0].concat([d[1]])},
@@ -417,8 +430,8 @@ const grammar: Grammar = {
     {"name": "object_attribute_name", "symbols": ["object_attribute_name$string$15"]},
     {"name": "object_attribute_name", "symbols": ["user_name"]},
     {"name": "AM$string$1", "symbols": [{"literal":"A"}, {"literal":"M"}], "postprocess": (d) => d.join('')},
-    {"name": "AM", "symbols": [{"literal":"%"}, "AM$string$1", "name", {"literal":"*"}, "_", "macro_body", "_", {"literal":"%"}], "postprocess":  
-        ([,command_code, name,,, macro_body]) => ({ command_code, name, macro_body })
+    {"name": "AM", "symbols": [{"literal":"%"}, "AM$string$1", "name", {"literal":"*"}, "macro_body", {"literal":"%"}], "postprocess":  
+        ([,command_code, name,, macro_body]) => ({ command_code, name, macro_body })
         },
     {"name": "macro_body$ebnf$1$subexpression$1", "symbols": ["primitive"]},
     {"name": "macro_body$ebnf$1$subexpression$1", "symbols": ["variable_definition"]},
@@ -432,21 +445,6 @@ const grammar: Grammar = {
     {"name": "variable_definition", "symbols": ["macro_variable", {"literal":"="}, "expr", {"literal":"*"}], "postprocess": 
         ([name,, expr]) => ({ name, expr })
         },
-    {"name": "primitive", "symbols": [{"literal":"0"}, "string", {"literal":"*"}]},
-    {"name": "primitive$ebnf$1$subexpression$1", "symbols": [{"literal":","}, "expr"]},
-    {"name": "primitive$ebnf$1", "symbols": ["primitive$ebnf$1$subexpression$1"], "postprocess": id},
-    {"name": "primitive$ebnf$1", "symbols": [], "postprocess": () => null},
-    {"name": "primitive", "symbols": [{"literal":"1"}, {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", "primitive$ebnf$1", {"literal":"*"}]},
-    {"name": "primitive$string$1", "symbols": [{"literal":"2"}, {"literal":"0"}], "postprocess": (d) => d.join('')},
-    {"name": "primitive", "symbols": ["primitive$string$1", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":"*"}]},
-    {"name": "primitive$string$2", "symbols": [{"literal":"2"}, {"literal":"1"}], "postprocess": (d) => d.join('')},
-    {"name": "primitive", "symbols": ["primitive$string$2", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":"*"}]},
-    {"name": "primitive$ebnf$2$subexpression$1", "symbols": [{"literal":","}, "expr", {"literal":","}, "expr"]},
-    {"name": "primitive$ebnf$2", "symbols": ["primitive$ebnf$2$subexpression$1"]},
-    {"name": "primitive$ebnf$2$subexpression$2", "symbols": [{"literal":","}, "expr", {"literal":","}, "expr"]},
-    {"name": "primitive$ebnf$2", "symbols": ["primitive$ebnf$2", "primitive$ebnf$2$subexpression$2"], "postprocess": (d) => d[0].concat([d[1]])},
-    {"name": "primitive", "symbols": [{"literal":"4"}, {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", "primitive$ebnf$2", {"literal":","}, "expr", {"literal":"*"}]},
-    {"name": "primitive", "symbols": [{"literal":"5"}, {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":"*"}]},
     {"name": "primitive", "symbols": [{"literal":"7"}, {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":"*"}], "postprocess": 
         (d) => {
           const primitive_map = {
@@ -500,26 +498,19 @@ const grammar: Grammar = {
     {"name": "macro_variable", "symbols": [{"literal":"$"}, "macro_variable$ebnf$1", /[1-9]/, "macro_variable$ebnf$2"], "postprocess": 
         (d) => d.slice(1).join("")
         },
-    {"name": "expr$ebnf$1$subexpression$1", "symbols": [/["+" | "-"]/]},
+    {"name": "expr$ebnf$1$subexpression$1", "symbols": [/[+\-]/]},
     {"name": "expr$ebnf$1$subexpression$1", "symbols": ["term"]},
     {"name": "expr$ebnf$1", "symbols": ["expr$ebnf$1$subexpression$1"]},
-    {"name": "expr$ebnf$1$subexpression$2", "symbols": [/["+" | "-"]/]},
+    {"name": "expr$ebnf$1$subexpression$2", "symbols": [/[+\-]/]},
     {"name": "expr$ebnf$1$subexpression$2", "symbols": ["term"]},
     {"name": "expr$ebnf$1", "symbols": ["expr$ebnf$1", "expr$ebnf$1$subexpression$2"], "postprocess": (d) => d[0].concat([d[1]])},
-    {"name": "expr", "symbols": ["expr$ebnf$1"]},
-    {"name": "expr", "symbols": ["expr", /[+-]/, "term"]},
-    {"name": "expr", "symbols": ["term"], "postprocess": 
-        (d) => d
-        },
+    {"name": "expr", "symbols": ["expr$ebnf$1", "expr", /[+\-]/, "term"]},
+    {"name": "expr", "symbols": ["term"]},
     {"name": "term", "symbols": ["term", /[x\/]/, "factor"]},
-    {"name": "term", "symbols": ["factor"], "postprocess": 
-        d => d
-        },
+    {"name": "term", "symbols": ["factor"]},
     {"name": "factor", "symbols": [{"literal":"("}, "expr", {"literal":")"}]},
     {"name": "factor", "symbols": ["macro_variable"]},
-    {"name": "factor", "symbols": ["unsigned_decimal"], "postprocess": 
-        d => d
-        },
+    {"name": "factor", "symbols": ["unsigned_decimal"]},
     {"name": "AB_statement", "symbols": ["AB_open", "block", "AB_close"], "postprocess": 
         d => d
         },
@@ -569,7 +560,7 @@ const grammar: Grammar = {
     {"name": "block$ebnf$1$subexpression$1", "symbols": ["TO"]},
     {"name": "block$ebnf$1$subexpression$1", "symbols": ["TD"]},
     {"name": "block$ebnf$1", "symbols": ["block$ebnf$1", "block$ebnf$1$subexpression$1"], "postprocess": (d) => d[0].concat([d[1]])},
-    {"name": "block", "symbols": ["block$ebnf$1"]},
+    {"name": "block", "symbols": ["block$ebnf$1"], "postprocess": ([d]) => d},
     {"name": "Dnn", "symbols": ["aperture_identifier", {"literal":"*"}], "postprocess": ([aperture_identifier]) => ({ command_code: "Dnn", aperture_identifier })},
     {"name": "aperture_identifier$ebnf$1", "symbols": [/[0]/], "postprocess": id},
     {"name": "aperture_identifier$ebnf$1", "symbols": [], "postprocess": () => null},
