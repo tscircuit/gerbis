@@ -108,6 +108,7 @@ G04 Ucamco ex. 2: Shapes*
 G04 Define Apertures*
 %AMTHERMAL80*
 7,0,0,0.800,0.550,0.125,45*%
+%ADD10C,0.1*%
 M02*
 
 `.trim()

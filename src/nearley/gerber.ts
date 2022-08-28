@@ -271,47 +271,60 @@ const grammar: Grammar = {
     {"name": "AD$subexpression$1$subexpression$4$ebnf$2", "symbols": [], "postprocess": () => null},
     {"name": "AD$subexpression$1$subexpression$4", "symbols": [{"literal":"P"}, {"literal":","}, "decimal", {"literal":"X"}, "decimal", "AD$subexpression$1$subexpression$4$ebnf$1", "AD$subexpression$1$subexpression$4$ebnf$2"]},
     {"name": "AD$subexpression$1", "symbols": ["AD$subexpression$1$subexpression$4"]},
-    {"name": "AD$subexpression$1$subexpression$5$ebnf$1$subexpression$1$ebnf$1", "symbols": []},
-    {"name": "AD$subexpression$1$subexpression$5$ebnf$1$subexpression$1$ebnf$1$subexpression$1", "symbols": [{"literal":"X"}, "decimal"]},
-    {"name": "AD$subexpression$1$subexpression$5$ebnf$1$subexpression$1$ebnf$1", "symbols": ["AD$subexpression$1$subexpression$5$ebnf$1$subexpression$1$ebnf$1", "AD$subexpression$1$subexpression$5$ebnf$1$subexpression$1$ebnf$1$subexpression$1"], "postprocess": (d) => d[0].concat([d[1]])},
-    {"name": "AD$subexpression$1$subexpression$5$ebnf$1$subexpression$1", "symbols": [{"literal":","}, "decimal", "AD$subexpression$1$subexpression$5$ebnf$1$subexpression$1$ebnf$1"]},
-    {"name": "AD$subexpression$1$subexpression$5$ebnf$1", "symbols": ["AD$subexpression$1$subexpression$5$ebnf$1$subexpression$1"], "postprocess": id},
-    {"name": "AD$subexpression$1$subexpression$5$ebnf$1", "symbols": [], "postprocess": () => null},
-    {"name": "AD$subexpression$1$subexpression$5", "symbols": ["name", "AD$subexpression$1$subexpression$5$ebnf$1"]},
+    {"name": "AD$subexpression$1$subexpression$5$ebnf$1", "symbols": []},
+    {"name": "AD$subexpression$1$subexpression$5$ebnf$1", "symbols": ["AD$subexpression$1$subexpression$5$ebnf$1", /[._a-zA-Z0-9]/], "postprocess": (d) => d[0].concat([d[1]])},
+    {"name": "AD$subexpression$1$subexpression$5$ebnf$2$subexpression$1$ebnf$1", "symbols": []},
+    {"name": "AD$subexpression$1$subexpression$5$ebnf$2$subexpression$1$ebnf$1$subexpression$1", "symbols": [{"literal":"X"}, "decimal"]},
+    {"name": "AD$subexpression$1$subexpression$5$ebnf$2$subexpression$1$ebnf$1", "symbols": ["AD$subexpression$1$subexpression$5$ebnf$2$subexpression$1$ebnf$1", "AD$subexpression$1$subexpression$5$ebnf$2$subexpression$1$ebnf$1$subexpression$1"], "postprocess": (d) => d[0].concat([d[1]])},
+    {"name": "AD$subexpression$1$subexpression$5$ebnf$2$subexpression$1", "symbols": [{"literal":","}, "decimal", "AD$subexpression$1$subexpression$5$ebnf$2$subexpression$1$ebnf$1"]},
+    {"name": "AD$subexpression$1$subexpression$5$ebnf$2", "symbols": ["AD$subexpression$1$subexpression$5$ebnf$2$subexpression$1"], "postprocess": id},
+    {"name": "AD$subexpression$1$subexpression$5$ebnf$2", "symbols": [], "postprocess": () => null},
+    {"name": "AD$subexpression$1$subexpression$5", "symbols": [/[^CROP0-9]/, "AD$subexpression$1$subexpression$5$ebnf$1", "AD$subexpression$1$subexpression$5$ebnf$2"]},
     {"name": "AD$subexpression$1", "symbols": ["AD$subexpression$1$subexpression$5"]},
     {"name": "AD$string$2", "symbols": [{"literal":"*"}, {"literal":"%"}], "postprocess": (d) => d.join('')},
     {"name": "AD", "symbols": [{"literal":"%"}, "AD$string$1", "aperture_identifier", "AD$subexpression$1", "AD$string$2"], "postprocess": 
-        ([,command_code, name, [[ty, ,...dargs]]]) => {
+        ([,command_code, aperture_identifier, [[ty,...dargs]]]) => {
           const type = ty === "C" ? "circle" : ty === "R" ? "rectangle" : ty === "O" ? "obround" : ty === "P" ? "polygon" : "named"
           let params = null
+          console.log({type, dargs})
           switch(type) {
             case "circle": 
               params = {
-                diameter: dargs[0],
-                hole_diameter: dargs[1]?.[1]
+                diameter: dargs[1],
+                hole_diameter: dargs[2]?.[1]
               }
               break
             case "rectangle":
             case "obround": 
               params = {
-                width: dargs[0],
-                height: dargs[1],
-                hole_diameter: dargs[2]?.[1]
+                width: dargs[1],
+                height: dargs[2],
+                hole_diameter: dargs[3]?.[1]
               }
               break
             case "polygon": 
               params = {
-                outer_diameter: dargs[0],
-                num_vertices: dargs[1],
-                rotation: dargs[2]?.[1],
-                hole_diameter: dargs[3]?.[1]
+                outer_diameter: dargs[1],
+                num_vertices: dargs[2],
+                rotation: dargs[3]?.[1],
+                hole_diameter: dargs[4]?.[1]
               }
               break
+            case "named": {
+              params = {
+                name: ty + dargs[0].join(""),
+                args: dargs[1]
+                  .flatMap(a => a)
+                  .filter(a => a!=="," && a!=="X")
+                  .map(a => parseFloat(a))
+              }
+              break
+            }
           }
         
           return {
             command_code,
-            name,
+            aperture_identifier,
             type,
             ...params
           }

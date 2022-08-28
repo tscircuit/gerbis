@@ -84,39 +84,50 @@ AD -> "%" "AD" aperture_identifier (
       | ("R" "," decimal "X" decimal ("X" decimal):?)
       | ("O" "," decimal "X" decimal ("X" decimal):?)
       | ("P" "," decimal "X" decimal ("X" decimal):? ("X" decimal):?)
-      | (name ("," decimal ("X" decimal):*):?)
+      | ([^CROP0-9] [._a-zA-Z0-9]:* ("," decimal ("X" decimal):*):?)
   ) "*%" {%
-  ([,command_code, name, [[ty, ,...dargs]]]) => {
+  ([,command_code, aperture_identifier, [[ty,...dargs]]]) => {
     const type = ty === "C" ? "circle" : ty === "R" ? "rectangle" : ty === "O" ? "obround" : ty === "P" ? "polygon" : "named"
     let params = null
+    console.log({type, dargs})
     switch(type) {
       case "circle": 
         params = {
-          diameter: dargs[0],
-          hole_diameter: dargs[1]?.[1]
+          diameter: dargs[1],
+          hole_diameter: dargs[2]?.[1]
         }
         break
       case "rectangle":
       case "obround": 
         params = {
-          width: dargs[0],
-          height: dargs[1],
-          hole_diameter: dargs[2]?.[1]
+          width: dargs[1],
+          height: dargs[2],
+          hole_diameter: dargs[3]?.[1]
         }
         break
       case "polygon": 
         params = {
-          outer_diameter: dargs[0],
-          num_vertices: dargs[1],
-          rotation: dargs[2]?.[1],
-          hole_diameter: dargs[3]?.[1]
+          outer_diameter: dargs[1],
+          num_vertices: dargs[2],
+          rotation: dargs[3]?.[1],
+          hole_diameter: dargs[4]?.[1]
         }
         break
+      case "named": {
+        params = {
+          name: ty + dargs[0].join(""),
+          args: dargs[1]
+            .flatMap(a => a)
+            .filter(a => a!=="," && a!=="X")
+            .map(a => parseFloat(a))
+        }
+        break
+      }
     }
 
     return {
       command_code,
-      name,
+      aperture_identifier,
       type,
       ...params
     }
