@@ -42,5 +42,5 @@ test("test example 1", async (t) => {
     if (cmd.length)
       t.fail(`non-command found\n\n${JSON.stringify(cmd, null, "  ")}`)
   }
-  t.pass("parses")
+  t.snapshot(result)
 })

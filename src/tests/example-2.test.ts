@@ -234,5 +234,5 @@ M02*
     if (cmd.length)
       t.fail(`non-command found\n\n${JSON.stringify(cmd, null, "  ")}`)
   }
-  t.pass("parses")
+  t.snapshot(commands)
 })
