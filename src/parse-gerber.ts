@@ -4,6 +4,10 @@ import grammar from "./nearley/gerber"
 export const parseGerber = (input: string) => {
   const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar))
   parser.feed(input.replace(/\n/g, ""))
+  if (parser.results.length > 1) {
+    // TODO comment out in prod
+    throw new Error("Ambiguous parse, bad grammar")
+  }
   return parser.results[0]
 }
 

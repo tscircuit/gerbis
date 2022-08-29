@@ -286,7 +286,7 @@ macro_variable   -> "$" [0-9]:* [1-9] [0-9]:* {%
 %}
 expr -> 
       ([+\-] | term):+
-    expr [+\-] term
+    | expr [+\-] term
     | term
 term -> 
   term [x\/] factor
