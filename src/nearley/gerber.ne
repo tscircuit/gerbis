@@ -105,10 +105,15 @@ LM -> "%" "LM" ("N"|"XY"|"Y"|"X") "*%"
 LR -> "%" "LR" decimal "*%"
 LS -> "%" "LS" decimal "*%"
 
-region_statement -> G36 (contour):+ G37
+region_statement -> G36 (contour):+ G37 {% ([g36, [contour], g37]) => ({
+  type: "region_statement",
+  contour
+}) %}
 contour -> D02 (D01|G01|G02|G03):*
-G36 -> "G36*"
-G37 -> "G37*"
+{% ([d02, rest]) => [d02].concat(rest.flatMap(a => a)) %}
+
+G36 -> "G36" "*" {% ([command_code]) => ({ command_code }) %}
+G37 -> "G37" "*" {% ([command_code]) => ({ command_code }) %}
 
 # It's a name that doesn't start with C, R, O, or P to avoid ambiguity
 name_atleast_2_chars -> [._a-zA-Z$] [._a-zA-Z0-9]:+ {% ([f, rest]) => f + rest.join("") %}
