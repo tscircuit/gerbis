@@ -1,7 +1,7 @@
 {
   "name": "gerbis",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/index.js",
   "description": "Gerber parser written in nearley for Typescript",
   "license": "MIT",
   "scripts": {
@@ -23,5 +23,8 @@
   },
   "dependencies": {
     "nearley": "^2.20.1"
-  }
+  },
+  "files": [
+    "dist"
+  ]
 }
