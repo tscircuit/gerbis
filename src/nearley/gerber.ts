@@ -137,8 +137,10 @@ const grammar: Grammar = {
         }
         },
     {"name": "start$ebnf$1", "symbols": []},
-    {"name": "start$ebnf$1", "symbols": ["start$ebnf$1", "cmd"], "postprocess": (d) => d[0].concat([d[1]])},
-    {"name": "start", "symbols": ["start$ebnf$1", "M02"], "postprocess": d => [...d[0].flatMap(v => v), d[1]]},
+    {"name": "start$ebnf$1$subexpression$1", "symbols": ["cmd"]},
+    {"name": "start$ebnf$1$subexpression$1", "symbols": ["M02"]},
+    {"name": "start$ebnf$1", "symbols": ["start$ebnf$1", "start$ebnf$1$subexpression$1"], "postprocess": (d) => d[0].concat([d[1]])},
+    {"name": "start", "symbols": ["start$ebnf$1"], "postprocess": ([d]) => d.flatMap(v => Array.isArray(v) ? v[0] : v)},
     {"name": "cmd", "symbols": ["G04"]},
     {"name": "cmd", "symbols": ["MO"]},
     {"name": "cmd", "symbols": ["FS"]},
@@ -260,6 +262,12 @@ const grammar: Grammar = {
     {"name": "G36", "symbols": ["G36$string$1"]},
     {"name": "G37$string$1", "symbols": [{"literal":"G"}, {"literal":"3"}, {"literal":"7"}, {"literal":"*"}], "postprocess": (d) => d.join('')},
     {"name": "G37", "symbols": ["G37$string$1"]},
+    {"name": "name_atleast_2_chars$ebnf$1", "symbols": [/[._a-zA-Z0-9]/]},
+    {"name": "name_atleast_2_chars$ebnf$1", "symbols": ["name_atleast_2_chars$ebnf$1", /[._a-zA-Z0-9]/], "postprocess": (d) => d[0].concat([d[1]])},
+    {"name": "name_atleast_2_chars", "symbols": [/[._a-zA-Z$]/, "name_atleast_2_chars$ebnf$1"], "postprocess": ([f, rest]) => f + rest.join("")},
+    {"name": "non_crop_character", "symbols": [/[._a-zA-BD-NQS-Z$]/], "postprocess": ([d]) => d},
+    {"name": "name_not_crop", "symbols": ["name_atleast_2_chars"]},
+    {"name": "name_not_crop", "symbols": ["non_crop_character"], "postprocess": ([d]) => d},
     {"name": "AD$string$1", "symbols": [{"literal":"A"}, {"literal":"D"}], "postprocess": (d) => d.join('')},
     {"name": "AD$subexpression$1$subexpression$1$ebnf$1$subexpression$1", "symbols": [{"literal":"X"}, "decimal"]},
     {"name": "AD$subexpression$1$subexpression$1$ebnf$1", "symbols": ["AD$subexpression$1$subexpression$1$ebnf$1$subexpression$1"], "postprocess": id},
@@ -284,15 +292,13 @@ const grammar: Grammar = {
     {"name": "AD$subexpression$1$subexpression$4$ebnf$1", "symbols": [], "postprocess": () => null},
     {"name": "AD$subexpression$1$subexpression$4", "symbols": [{"literal":"P"}, {"literal":","}, "decimal", {"literal":"X"}, "decimal", "AD$subexpression$1$subexpression$4$ebnf$1"]},
     {"name": "AD$subexpression$1", "symbols": ["AD$subexpression$1$subexpression$4"]},
-    {"name": "AD$subexpression$1$subexpression$5$ebnf$1", "symbols": []},
-    {"name": "AD$subexpression$1$subexpression$5$ebnf$1", "symbols": ["AD$subexpression$1$subexpression$5$ebnf$1", /[._a-zA-Z0-9]/], "postprocess": (d) => d[0].concat([d[1]])},
-    {"name": "AD$subexpression$1$subexpression$5$ebnf$2$subexpression$1$ebnf$1", "symbols": []},
-    {"name": "AD$subexpression$1$subexpression$5$ebnf$2$subexpression$1$ebnf$1$subexpression$1", "symbols": [{"literal":"X"}, "decimal"]},
-    {"name": "AD$subexpression$1$subexpression$5$ebnf$2$subexpression$1$ebnf$1", "symbols": ["AD$subexpression$1$subexpression$5$ebnf$2$subexpression$1$ebnf$1", "AD$subexpression$1$subexpression$5$ebnf$2$subexpression$1$ebnf$1$subexpression$1"], "postprocess": (d) => d[0].concat([d[1]])},
-    {"name": "AD$subexpression$1$subexpression$5$ebnf$2$subexpression$1", "symbols": [{"literal":","}, "decimal", "AD$subexpression$1$subexpression$5$ebnf$2$subexpression$1$ebnf$1"]},
-    {"name": "AD$subexpression$1$subexpression$5$ebnf$2", "symbols": ["AD$subexpression$1$subexpression$5$ebnf$2$subexpression$1"], "postprocess": id},
-    {"name": "AD$subexpression$1$subexpression$5$ebnf$2", "symbols": [], "postprocess": () => null},
-    {"name": "AD$subexpression$1$subexpression$5", "symbols": [/[^CROP0-9]/, "AD$subexpression$1$subexpression$5$ebnf$1", "AD$subexpression$1$subexpression$5$ebnf$2"]},
+    {"name": "AD$subexpression$1$subexpression$5$ebnf$1$subexpression$1$ebnf$1", "symbols": []},
+    {"name": "AD$subexpression$1$subexpression$5$ebnf$1$subexpression$1$ebnf$1$subexpression$1", "symbols": [{"literal":"X"}, "decimal"]},
+    {"name": "AD$subexpression$1$subexpression$5$ebnf$1$subexpression$1$ebnf$1", "symbols": ["AD$subexpression$1$subexpression$5$ebnf$1$subexpression$1$ebnf$1", "AD$subexpression$1$subexpression$5$ebnf$1$subexpression$1$ebnf$1$subexpression$1"], "postprocess": (d) => d[0].concat([d[1]])},
+    {"name": "AD$subexpression$1$subexpression$5$ebnf$1$subexpression$1", "symbols": [{"literal":","}, "decimal", "AD$subexpression$1$subexpression$5$ebnf$1$subexpression$1$ebnf$1"]},
+    {"name": "AD$subexpression$1$subexpression$5$ebnf$1", "symbols": ["AD$subexpression$1$subexpression$5$ebnf$1$subexpression$1"], "postprocess": id},
+    {"name": "AD$subexpression$1$subexpression$5$ebnf$1", "symbols": [], "postprocess": () => null},
+    {"name": "AD$subexpression$1$subexpression$5", "symbols": ["name_not_crop", "AD$subexpression$1$subexpression$5$ebnf$1"]},
     {"name": "AD$subexpression$1", "symbols": ["AD$subexpression$1$subexpression$5"]},
     {"name": "AD$string$2", "symbols": [{"literal":"*"}, {"literal":"%"}], "postprocess": (d) => d.join('')},
     {"name": "AD", "symbols": [{"literal":"%"}, "AD$string$1", "aperture_identifier", "AD$subexpression$1", "AD$string$2"], "postprocess": 
@@ -324,8 +330,8 @@ const grammar: Grammar = {
               break
             case "named": {
               params = {
-                name: ty + dargs[0].join(""),
-                args: dargs[1]
+                name: ty[0],
+                args: (dargs[0] || []).slice(1,2).concat(dargs[0][2] || [])
                   .flatMap(a => a)
                   .filter(a => a!=="," && a!=="X")
                   .map(a => parseFloat(a))
@@ -445,6 +451,21 @@ const grammar: Grammar = {
     {"name": "variable_definition", "symbols": ["macro_variable", {"literal":"="}, "expr", {"literal":"*"}], "postprocess": 
         ([name,, expr]) => ({ name, expr })
         },
+    {"name": "primitive", "symbols": [{"literal":"0"}, "string", {"literal":"*"}]},
+    {"name": "primitive$ebnf$1$subexpression$1", "symbols": [{"literal":","}, "expr"]},
+    {"name": "primitive$ebnf$1", "symbols": ["primitive$ebnf$1$subexpression$1"], "postprocess": id},
+    {"name": "primitive$ebnf$1", "symbols": [], "postprocess": () => null},
+    {"name": "primitive", "symbols": [{"literal":"1"}, {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", "primitive$ebnf$1", {"literal":"*"}]},
+    {"name": "primitive$string$1", "symbols": [{"literal":"2"}, {"literal":"0"}], "postprocess": (d) => d.join('')},
+    {"name": "primitive", "symbols": ["primitive$string$1", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":"*"}]},
+    {"name": "primitive$string$2", "symbols": [{"literal":"2"}, {"literal":"1"}], "postprocess": (d) => d.join('')},
+    {"name": "primitive", "symbols": ["primitive$string$2", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":"*"}]},
+    {"name": "primitive$ebnf$2$subexpression$1", "symbols": [{"literal":","}, "expr", {"literal":","}, "expr"]},
+    {"name": "primitive$ebnf$2", "symbols": ["primitive$ebnf$2$subexpression$1"]},
+    {"name": "primitive$ebnf$2$subexpression$2", "symbols": [{"literal":","}, "expr", {"literal":","}, "expr"]},
+    {"name": "primitive$ebnf$2", "symbols": ["primitive$ebnf$2", "primitive$ebnf$2$subexpression$2"], "postprocess": (d) => d[0].concat([d[1]])},
+    {"name": "primitive", "symbols": [{"literal":"4"}, {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", "primitive$ebnf$2", {"literal":","}, "expr", {"literal":"*"}]},
+    {"name": "primitive", "symbols": [{"literal":"5"}, {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":"*"}]},
     {"name": "primitive", "symbols": [{"literal":"7"}, {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":"*"}], "postprocess": 
         (d) => {
           const primitive_map = {

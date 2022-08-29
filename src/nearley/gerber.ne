@@ -25,10 +25,15 @@
   // return token;
 // })(lexer.next);
 %}
-
 # @lexer lexer
 
-start -> cmd:* M02 {% d => [...d[0].flatMap(v => v), d[1]] %}
+# The formal grammar analyzes an entire program, but in practice I've found it's
+# more useful to be able to parse subsections, or command-by-command. You can
+# manually do the M02 check or uncomment the line below to get full program
+# checking
+# start -> cmd:* M02 {% d => [...d[0].flatMap(v => v), d[1]] %}
+
+start -> (cmd | M02):* {% ([d]) => d.flatMap(v => Array.isArray(v) ? v[0] : v) %}
 
 cmd -> G04
   | MO
@@ -105,12 +110,17 @@ contour -> D02 (D01|G01|G02|G03):*
 G36 -> "G36*"
 G37 -> "G37*"
 
+# It's a name that doesn't start with C, R, O, or P to avoid ambiguity
+name_atleast_2_chars -> [._a-zA-Z$] [._a-zA-Z0-9]:+ {% ([f, rest]) => f + rest.join("") %}
+non_crop_character -> [._a-zA-BD-NQS-Z$] {% ([d]) => d %}
+name_not_crop -> name_atleast_2_chars | non_crop_character
+  {% ([d]) => d %}
 AD -> "%" "AD" aperture_identifier (
         ("C" "," decimal ("X" decimal):?)
       | ("R" "," decimal "X" decimal ("X" decimal):?)
       | ("O" "," decimal "X" decimal ("X" decimal):?)
       | ("P" "," decimal "X" decimal ("X" decimal ("X" decimal):?):?)
-      | ([^CROP0-9] [._a-zA-Z0-9]:* ("," decimal ("X" decimal):*):?)
+      | ( name_not_crop ("," decimal ("X" decimal):*):? )
   ) "*%" {%
   ([,command_code, aperture_identifier, [[ty,...dargs]]]) => {
     const type = ty === "C" ? "circle" : ty === "R" ? "rectangle" : ty === "O" ? "obround" : ty === "P" ? "polygon" : "named"
@@ -140,8 +150,8 @@ AD -> "%" "AD" aperture_identifier (
         break
       case "named": {
         params = {
-          name: ty + dargs[0].join(""),
-          args: dargs[1]
+          name: ty[0],
+          args: (dargs[0] || []).slice(1,2).concat(dargs[0][2] || [])
             .flatMap(a => a)
             .filter(a => a!=="," && a!=="X")
             .map(a => parseFloat(a))
@@ -211,13 +221,13 @@ variable_definition -> macro_variable "=" expr "*" {%
 %}
 
 primitive ->
-    #   "0"  string "*"
-    # | "1"  "," expr "," expr "," expr "," expr ("," expr):? "*"
-    # | "20" "," expr "," expr "," expr "," expr "," expr "," expr "," expr "*"
-    # | "21" "," expr "," expr "," expr "," expr "," expr "," expr "*"
-    # | "4"  "," expr "," expr "," expr "," expr ("," expr "," expr):+ "," expr "*"
-    # | "5"  "," expr "," expr "," expr "," expr "," expr "," expr "*"
-    "7"  "," expr "," expr "," expr "," expr "," expr "," expr "*"
+      "0"  string "*"
+    | "1"  "," expr "," expr "," expr "," expr ("," expr):? "*"
+    | "20" "," expr "," expr "," expr "," expr "," expr "," expr "," expr "*"
+    | "21" "," expr "," expr "," expr "," expr "," expr "," expr "*"
+    | "4"  "," expr "," expr "," expr "," expr ("," expr "," expr):+ "," expr "*"
+    | "5"  "," expr "," expr "," expr "," expr "," expr "," expr "*"
+    | "7"  "," expr "," expr "," expr "," expr "," expr "," expr "*"
 {%
   (d) => {
     const primitive_map = {

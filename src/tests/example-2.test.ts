@@ -92,8 +92,7 @@ const parse = (input: string) => {
 }
 
 test("test example 2", async (t) => {
-  const results = parse(
-    `
+  const input_string = `
 
 G04 Ucamco ex. 2: Shapes*
 %FSLAX36Y36*%
@@ -101,30 +100,58 @@ G04 Ucamco ex. 2: Shapes*
 %TF.FileFunction,Other,Sample*%
 %LPD*%
 G04 Define Apertures*
+
 %AMTHERMAL80*
 7,0,0,0.800,0.550,0.125,45*%
+
+
+
 %ADD10C,0.1*%
+
+
+
 %ADD11C,0.6*%
+
+
+
 %ADD12R,0.6X0.6*%
 %ADD13R,0.4X1.00*%
+
+
 %ADD16P,1.00X3*%
+
+
+
+%ADD19THERMAL80,1X2*%
+
+
+
 M02*
 
 `.trim()
-  )
-  if (results.length > 1) {
-    return t.fail(
-      `ambiguous grammar, interpretations: ${results.length}\n${JSON.stringify(
-        null,
-        // results.slice(0, 2),
-        null,
-        "  "
-      )}`
-    )
-  }
-  const [result] = results
-  console.dir(result, { depth: Infinity })
-  for (let cmd of result) {
+
+  const commands = input_string
+    .split("\n\n")
+    .filter(Boolean)
+    .flatMap((section) => {
+      const results = parse(section)
+      if (results.length > 1) {
+        return t.fail(
+          `ambiguous grammar: "${section}", interpretations: ${
+            results.length
+          }\n${JSON.stringify(
+            null,
+            // results.slice(0, 2),
+            null,
+            "  "
+          )}`
+        )
+      }
+
+      return results[0]
+    })
+  console.dir(commands, { depth: Infinity })
+  for (let cmd of commands) {
     if (cmd.length)
       t.fail(`non-command found\n\n${JSON.stringify(cmd, null, "  ")}`)
   }
