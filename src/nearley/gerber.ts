@@ -459,6 +459,7 @@ const grammar: Grammar = {
     {"name": "primitive$ebnf$1", "symbols": ["primitive$ebnf$1$subexpression$1"], "postprocess": id},
     {"name": "primitive$ebnf$1", "symbols": [], "postprocess": () => null},
     {"name": "primitive", "symbols": [{"literal":"1"}, {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", "primitive$ebnf$1", {"literal":"*"}]},
+    {"name": "primitive", "symbols": [{"literal":"2"}, {"literal":","}, "expr", {"literal":"*"}]},
     {"name": "primitive$string$1", "symbols": [{"literal":"2"}, {"literal":"0"}], "postprocess": (d) => d.join('')},
     {"name": "primitive", "symbols": ["primitive$string$1", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":","}, "expr", {"literal":"*"}]},
     {"name": "primitive$string$2", "symbols": [{"literal":"2"}, {"literal":"1"}], "postprocess": (d) => d.join('')},
@@ -522,13 +523,6 @@ const grammar: Grammar = {
     {"name": "macro_variable", "symbols": [{"literal":"$"}, "macro_variable$ebnf$1", /[1-9]/, "macro_variable$ebnf$2"], "postprocess": 
         (d) => d.slice(1).join("")
         },
-    {"name": "expr$ebnf$1$subexpression$1", "symbols": [/[+\-]/]},
-    {"name": "expr$ebnf$1$subexpression$1", "symbols": ["term"]},
-    {"name": "expr$ebnf$1", "symbols": ["expr$ebnf$1$subexpression$1"]},
-    {"name": "expr$ebnf$1$subexpression$2", "symbols": [/[+\-]/]},
-    {"name": "expr$ebnf$1$subexpression$2", "symbols": ["term"]},
-    {"name": "expr$ebnf$1", "symbols": ["expr$ebnf$1", "expr$ebnf$1$subexpression$2"], "postprocess": (d) => d[0].concat([d[1]])},
-    {"name": "expr", "symbols": ["expr$ebnf$1"]},
     {"name": "expr", "symbols": ["expr", /[+\-]/, "term"]},
     {"name": "expr", "symbols": ["term"]},
     {"name": "term", "symbols": ["term", /[x\/]/, "factor"]},

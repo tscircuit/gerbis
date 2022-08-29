@@ -1,6 +1,6 @@
 {
   "name": "gerbis",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "main": "dist/index.js",
   "description": "Gerber parser written in nearley for Typescript",
   "license": "MIT",

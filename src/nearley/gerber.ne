@@ -228,6 +228,7 @@ variable_definition -> macro_variable "=" expr "*" {%
 primitive ->
       "0"  string "*"
     | "1"  "," expr "," expr "," expr "," expr ("," expr):? "*"
+    | "2"  "," expr "*"
     | "20" "," expr "," expr "," expr "," expr "," expr "," expr "," expr "*"
     | "21" "," expr "," expr "," expr "," expr "," expr "," expr "*"
     | "4"  "," expr "," expr "," expr "," expr ("," expr "," expr):+ "," expr "*"
@@ -285,8 +286,8 @@ macro_variable   -> "$" [0-9]:* [1-9] [0-9]:* {%
   (d) => d.slice(1).join("")
 %}
 expr -> 
-      ([+\-] | term):+
-    | expr [+\-] term
+      # ([+\-] | term):+
+      expr [+\-] term
     | term
 term -> 
   term [x\/] factor

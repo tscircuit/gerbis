@@ -67,10 +67,5 @@ X18000000D03*
 M02*`
 
 test("SMD_prim_20", (t) => {
-  // const debug_split = SMD_prim_20.split("\n\n")
-  // debug_split.map((section) => parseGerber(section))
-  parseGerber(`
-%AMRECTROUNDCORNERS*
-20,1,2-2,1,1,1,1,1*
-`)
+  t.snapshot(parseGerber(SMD_prim_20))
 })
