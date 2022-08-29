@@ -393,7 +393,10 @@ const grammar: Grammar = {
     {"name": "TO$ebnf$1$subexpression$1", "symbols": [{"literal":","}, "field"]},
     {"name": "TO$ebnf$1", "symbols": ["TO$ebnf$1", "TO$ebnf$1$subexpression$1"], "postprocess": (d) => d[0].concat([d[1]])},
     {"name": "TO$string$2", "symbols": [{"literal":"*"}, {"literal":"%"}], "postprocess": (d) => d.join('')},
-    {"name": "TO", "symbols": [{"literal":"%"}, "TO$string$1", "object_attribute_name", "TO$ebnf$1", "TO$string$2"]},
+    {"name": "TO", "symbols": [{"literal":"%"}, "TO$string$1", "object_attribute_name", "TO$ebnf$1", "TO$string$2"], "postprocess": 
+        ([,command_code, [name], values]) =>
+          ({ command_code, name, values: values.map(v => v[1]) })
+        },
     {"name": "TD$string$1", "symbols": [{"literal":"T"}, {"literal":"D"}], "postprocess": (d) => d.join('')},
     {"name": "TD$ebnf$1$subexpression$1", "symbols": ["file_attribute_name"]},
     {"name": "TD$ebnf$1$subexpression$1", "symbols": ["aperture_attribute_name"]},
@@ -402,7 +405,10 @@ const grammar: Grammar = {
     {"name": "TD$ebnf$1", "symbols": ["TD$ebnf$1$subexpression$1"], "postprocess": id},
     {"name": "TD$ebnf$1", "symbols": [], "postprocess": () => null},
     {"name": "TD$string$2", "symbols": [{"literal":"*"}, {"literal":"%"}], "postprocess": (d) => d.join('')},
-    {"name": "TD", "symbols": [{"literal":"%"}, "TD$string$1", "TD$ebnf$1", "TD$string$2"]},
+    {"name": "TD", "symbols": [{"literal":"%"}, "TD$string$1", "TD$ebnf$1", "TD$string$2"], "postprocess": 
+        ([,command_code, [name] = []]) =>
+          ({ command_code, name })
+        },
     {"name": "aperture_attribute_name$string$1", "symbols": [{"literal":"."}, {"literal":"A"}, {"literal":"p"}, {"literal":"e"}, {"literal":"r"}, {"literal":"F"}, {"literal":"u"}, {"literal":"n"}, {"literal":"c"}, {"literal":"t"}, {"literal":"i"}, {"literal":"o"}, {"literal":"n"}], "postprocess": (d) => d.join('')},
     {"name": "aperture_attribute_name", "symbols": ["aperture_attribute_name$string$1"]},
     {"name": "aperture_attribute_name$string$2", "symbols": [{"literal":"."}, {"literal":"D"}, {"literal":"r"}, {"literal":"i"}, {"literal":"l"}, {"literal":"l"}, {"literal":"T"}, {"literal":"o"}, {"literal":"l"}, {"literal":"e"}, {"literal":"r"}, {"literal":"a"}, {"literal":"n"}, {"literal":"c"}, {"literal":"e"}], "postprocess": (d) => d.join('')},

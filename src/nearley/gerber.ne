@@ -184,7 +184,10 @@ TA -> "%" "TA" aperture_attribute_name ("," field):* "*%" {%
   ([,command_code, [name], values]) =>
     ({ command_code, name, values: values.map(v => v[1]) })
 %}
-TO -> "%" "TO" object_attribute_name ("," field):* "*%"
+TO -> "%" "TO" object_attribute_name ("," field):* "*%" {%
+  ([,command_code, [name], values]) =>
+    ({ command_code, name, values: values.map(v => v[1]) })
+%}
 TD -> "%" "TD"
     (
         file_attribute_name
@@ -192,7 +195,10 @@ TD -> "%" "TD"
         | object_attribute_name
         | user_name
     ):?
-    "*%"
+    "*%" {%
+    ([,command_code, [name] = []]) =>
+      ({ command_code, name })
+%}
 
 aperture_attribute_name ->
       ".AperFunction"
