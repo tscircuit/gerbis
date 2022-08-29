@@ -1,4 +1,4 @@
-# Gerber Toolkit
+# Gerbis (Gerber Toolkit)
 
 Simple toolkit for working with PCB Gerber files (and associated drill files).
 
