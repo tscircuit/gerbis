@@ -384,7 +384,10 @@ const grammar: Grammar = {
     {"name": "TA$ebnf$1$subexpression$1", "symbols": [{"literal":","}, "field"]},
     {"name": "TA$ebnf$1", "symbols": ["TA$ebnf$1", "TA$ebnf$1$subexpression$1"], "postprocess": (d) => d[0].concat([d[1]])},
     {"name": "TA$string$2", "symbols": [{"literal":"*"}, {"literal":"%"}], "postprocess": (d) => d.join('')},
-    {"name": "TA", "symbols": [{"literal":"%"}, "TA$string$1", "aperture_attribute_name", "TA$ebnf$1", "TA$string$2"]},
+    {"name": "TA", "symbols": [{"literal":"%"}, "TA$string$1", "aperture_attribute_name", "TA$ebnf$1", "TA$string$2"], "postprocess": 
+        ([,command_code, [name], values]) =>
+          ({ command_code, name, values: values.map(v => v[1]) })
+        },
     {"name": "TO$string$1", "symbols": [{"literal":"T"}, {"literal":"O"}], "postprocess": (d) => d.join('')},
     {"name": "TO$ebnf$1", "symbols": []},
     {"name": "TO$ebnf$1$subexpression$1", "symbols": [{"literal":","}, "field"]},

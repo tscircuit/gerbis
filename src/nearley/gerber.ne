@@ -180,7 +180,10 @@ D02 -> ("X" integer):? ("Y" integer):? "D02" "*" {%
 ([xt, yt]) => ({ command_code: "D02", x: xt?.[1], y: yt?.[1] }) %}
 D03 -> ("X" integer):? ("Y" integer):? "D03" "*" {% ([xt, yt]) => ({ command_code: "D03", x: xt?.[1], y: yt?.[1] }) %}
 
-TA -> "%" "TA" aperture_attribute_name ("," field):* "*%"
+TA -> "%" "TA" aperture_attribute_name ("," field):* "*%" {%
+  ([,command_code, [name], values]) =>
+    ({ command_code, name, values: values.map(v => v[1]) })
+%}
 TO -> "%" "TO" object_attribute_name ("," field):* "*%"
 TD -> "%" "TD"
     (
